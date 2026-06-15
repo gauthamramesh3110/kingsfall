@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* Surfaces */
+  --color-surface-page: #17130D;
+  --color-surface-stage: #120F0A;
+  --color-surface-panel: #1E1810;
+  --color-surface-card: #1A150E;
+  --color-surface-button: #1A140C;
+  --color-surface-resurrection: #241C0E;
+
+  /* Borders */
+  --color-border-primary: #2A2216;
+  --color-border-masthead: #2C2418;
+  --color-border-seat: #241D12;
+
+  /* Board squares */
+  --color-square-dark: #241D13;
+  --color-square-light: #34291B;
+
+  /* Text */
+  --color-text-primary: #ECE3CF;
+  --color-text-body: #CBC2AC;
+  --color-text-muted: #8A8270;
+  --color-text-faint: #5C564A;
+}
+
+.board {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+}
+
+.board-5 {
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+}
+
+.board-6 {
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+}
+
+.board-7 {
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+}
