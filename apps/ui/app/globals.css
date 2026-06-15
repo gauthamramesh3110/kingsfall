@@ -18,6 +18,15 @@
   --color-square-dark: #241D13;
   --color-square-light: #34291B;
 
+  /* Gilt */
+  --color-gilt: #C79A4A;
+  --color-gilt-dim: #6E5A2E;
+
+  /* Teams & status */
+  --color-team-you: #74A9C9;
+  --color-team-enemy: #CC5B52;
+  --color-status-ok: #88B36A;
+
   /* Text */
   --color-text-primary: #ECE3CF;
   --color-text-body: #CBC2AC;
