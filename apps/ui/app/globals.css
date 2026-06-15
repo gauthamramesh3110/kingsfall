@@ -34,23 +34,24 @@
   --color-text-faint: #5C564A;
 }
 
-.board {
+.board-wrap {
   width: 100%;
   aspect-ratio: 1 / 1;
+  container-type: inline-size;
+}
+
+.board {
+  width: 100%;
+  height: 100%;
   display: grid;
-}
-
-.board-5 {
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-}
-
-.board-6 {
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: repeat(6, 1fr);
 }
 
-.board-7 {
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(7, 1fr);
+.board-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11cqi;
+  line-height: 1;
 }
