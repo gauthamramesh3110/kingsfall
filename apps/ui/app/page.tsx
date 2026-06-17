@@ -1,12 +1,7 @@
-import Board from "./components/Board";
+import Game from "./components/GameOld";
+import Main from "./components/Game";
 
 export default function Home() {
-  return (
-    <div className="flex h-screen">
-      <div className="flex w-1/2 items-center justify-center p-8">
-        <Board />
-      </div>
-      <div className="w-1/2"> Hi </div>
-    </div>
-  );
+  // return <Game />;
+  return <Main />;
 }
