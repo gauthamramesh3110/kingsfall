@@ -1,22 +1,23 @@
-import { useState } from "react";
-import { GLYPHS, Piece, PieceType } from "./gameTypes";
-import { calculatePossibleMoves } from "./helpers";
-import { BOARD_SIZE } from "./constants";
-interface BoardProps {
-    boardState: (Piece | null)[][];
-    addMove: (piece: Piece, fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
-}
+import { BOARD_SIZE, GLYPHS } from "../constants/constants";
+import { useBoardState } from "../state/boardState";
 
+const getSquareClasses = (row: number, col: number, isSelected: boolean, isLegalMove: boolean) => {
+    const squareColorClass = (row + col) % 2 === 0 ? "bg-square-light" : "bg-square-dark";
+    const selectedClass = isSelected ? "border-2 border-gilt" : "";
+    const legalMoveClass = isLegalMove ? "border-2 border-gilt-dim" : "";
+    const cornerClass = row === 0 && col === 0 ? "rounded-tl-lg" :
+        row === 0 && col === BOARD_SIZE - 1 ? "rounded-tr-lg" :
+            row === BOARD_SIZE - 1 && col === 0 ? "rounded-bl-lg" :
+                row === BOARD_SIZE - 1 && col === BOARD_SIZE - 1 ? "rounded-br-lg" : "";
 
-export default function Board({ boardState, addMove }: BoardProps) {
-    const [selectedCell, setSelectedCell] = useState<{ row: number; col: number; type: PieceType } | null>(null);
-    const [possibleMoves, setPossibleMoves] = useState<{ row: number; col: number }[]>([]);
+    return `${squareColorClass} ${selectedClass} ${legalMoveClass} ${cornerClass}`.trim();
+};
 
-    const selectPiece = (row: number, col: number, type: PieceType) => {
-        setSelectedCell({ row, col, type });
-        const moves = calculatePossibleMoves(row, col, type);
-        setPossibleMoves(moves);
-    };
+export default function Board() {
+
+    const boardState = useBoardState(state => state.boardState);
+    const pieceSelected = useBoardState(state => state.pieceSelected);
+    const legalMoves = useBoardState(state => state.legalMoves);
 
     return (
         <div className={`grid grid-cols-7 w-full max-w-lg mx-auto rounded-lg overflow-hidden`}>
@@ -25,51 +26,32 @@ export default function Board({ boardState, addMove }: BoardProps) {
                 const col = i % BOARD_SIZE;
                 const key = `${row}-${col}`;
 
-                const cellValue = boardState[row][col];
-                const cellGlyph = cellValue ? GLYPHS[cellValue.type] : '';
-                const cellTeam = cellValue ? cellValue.team : null;
+                const piece = boardState.find(p => p.position.row === row && p.position.col === col);
 
-                const isSelected = selectedCell?.row === row && selectedCell?.col === col;
-                const isClickable = cellValue !== null && cellValue.team === 'you';
-                const isPossibleMove = possibleMoves.some(move => move.row === row && move.col === col);
+                const isSelected = !!pieceSelected && pieceSelected.position.row === row && pieceSelected.position.col === col;
+                const isLegalMove = legalMoves.some(move => move.row === row && move.col === col);
 
-                const squareColorClass = (row + col) % 2 === 0 ? "bg-square-light" : "bg-square-dark";
-                const teamColorClass = cellTeam === 'you' ? 'text-team-you' : cellTeam === 'enemy' ? 'text-team-enemy' : '';
-                const selectedClass = isSelected ? 'border-4 border-gilt' : '';
-                const possibleMoveClass = isPossibleMove ? 'border-4 border-gilt-dim' : '';
-                const cornerClass = (
-                    (row === 0 && col === 0) ? 'rounded-tl-lg' :
-                        (row === 0 && col === BOARD_SIZE - 1) ? 'rounded-tr-lg' :
-                            (row === BOARD_SIZE - 1 && col === 0) ? 'rounded-bl-lg' :
-                                (row === BOARD_SIZE - 1 && col === BOARD_SIZE - 1) ? 'rounded-br-lg' :
-                                    ''
-                );
-
+                const squareClasses = getSquareClasses(row, col, isSelected, isLegalMove);
 
                 return (
                     <div
-                        className={`text-3xl aspect-square flex items-center justify-center select-none ${squareColorClass} ${teamColorClass} ${selectedClass} ${possibleMoveClass} ${cornerClass}`}
+                        className={`text-3xl aspect-square flex items-center justify-center select-none ${squareClasses}`}
                         key={key}
-                        onClick={() => {
-                            if (isPossibleMove && selectedCell) {
-                                addMove(
-                                    { type: selectedCell.type, team: 'you' },
-                                    selectedCell.row,
-                                    selectedCell.col,
-                                    row,
-                                    col
-                                );
-                                setSelectedCell(null);
-                                setPossibleMoves([]);
-                            } else if (isClickable && !isSelected) {
-                                selectPiece(row, col, cellValue!.type);
-                            } else if (isClickable && isSelected && selectedCell.col === col && selectedCell.row === row) {
-                                setSelectedCell(null);
-                                setPossibleMoves([]);
-                            }
-                        }}
                     >
-                        {cellGlyph}
+                        {piece && (
+                            <div
+                                className="w-full h-full flex items-center justify-center cursor-pointer"
+                                onClick={() => piece.team === "you" && useBoardState.getState().setPieceSelected(piece)}>
+                                <span className={`select-none text-team-${piece.team}`}>{GLYPHS[piece.type]}</span>
+                            </div>
+                        )}
+                        {!piece && isLegalMove && (
+                            <div
+                                className="w-full h-full flex items-center justify-center cursor-pointer"
+                            >
+                                <span className="select-none text-gilt-dim">•</span>
+                            </div>
+                        )}
                     </div>
                 );
             })}
