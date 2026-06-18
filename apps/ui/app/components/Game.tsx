@@ -39,17 +39,32 @@ export default function Main() {
         initBoardArray
     );
 
-    const updateBoard = (newBoard: (Piece | null)[][]) => {
-        // setBoardState(newBoard);
-    }
+    const [nextMoves, setNextMoves] = useState<Map<Piece, [number, number, number, number]>>(new Map());
+
+    const addMove = (piece: Piece,fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+        setNextMoves(prev => {
+            const newMoves = new Map(prev);
+            newMoves.set(piece, [fromRow, fromCol, toRow, toCol]);
+            return newMoves;
+        });
+    };
 
 
     return (
         <div className="flex">
             <div className="w-1/2 h-screen grid place-items-center">
-                <Board boardState={boardState} updateBoard={updateBoard} />
+                <Board boardState={boardState} addMove={addMove} />
             </div>
-            <div className="w-1/2 h-screen">Right</div>
+            <div className="w-1/2 h-screen">
+                <h2 className="text-2xl font-bold mb-4">Next Moves:</h2>
+                <ul className="list-disc list-inside">
+                    {Array.from(nextMoves.entries()).map(([piece, [fromRow, fromCol, toRow, toCol]], index) => (
+                        <li key={index}>
+                            Move from ({fromRow}, {fromCol}) to ({toRow}, {toCol})
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
     );
 }

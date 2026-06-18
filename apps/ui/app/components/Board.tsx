@@ -4,12 +4,11 @@ import { calculatePossibleMoves } from "./helpers";
 import { BOARD_SIZE } from "./constants";
 interface BoardProps {
     boardState: (Piece | null)[][];
-    updateBoard: (newBoard: (Piece | null)[][]) => void;
+    addMove: (piece: Piece, fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
 }
 
-const gridSizeClass = `grid-cols-${BOARD_SIZE}`;
 
-export default function Board({ boardState, updateBoard }: BoardProps) {
+export default function Board({ boardState, addMove }: BoardProps) {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number; type: PieceType } | null>(null);
     const [possibleMoves, setPossibleMoves] = useState<{ row: number; col: number }[]>([]);
 
@@ -17,10 +16,10 @@ export default function Board({ boardState, updateBoard }: BoardProps) {
         setSelectedCell({ row, col, type });
         const moves = calculatePossibleMoves(row, col, type);
         setPossibleMoves(moves);
-    };    
+    };
 
     return (
-        <div className={`grid ${gridSizeClass} w-full max-w-lg mx-auto rounded-lg overflow-hidden`}>
+        <div className={`grid grid-cols-7 w-full max-w-lg mx-auto rounded-lg overflow-hidden`}>
             {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
                 const row = Math.floor(i / BOARD_SIZE);
                 const col = i % BOARD_SIZE;
@@ -51,7 +50,24 @@ export default function Board({ boardState, updateBoard }: BoardProps) {
                     <div
                         className={`text-3xl aspect-square flex items-center justify-center select-none ${squareColorClass} ${teamColorClass} ${selectedClass} ${possibleMoveClass} ${cornerClass}`}
                         key={key}
-                        onClick={() => isClickable && selectPiece(row, col, cellValue!.type)}
+                        onClick={() => {
+                            if (isPossibleMove && selectedCell) {
+                                addMove(
+                                    { type: selectedCell.type, team: 'you' },
+                                    selectedCell.row,
+                                    selectedCell.col,
+                                    row,
+                                    col
+                                );
+                                setSelectedCell(null);
+                                setPossibleMoves([]);
+                            } else if (isClickable && !isSelected) {
+                                selectPiece(row, col, cellValue!.type);
+                            } else if (isClickable && isSelected && selectedCell.col === col && selectedCell.row === row) {
+                                setSelectedCell(null);
+                                setPossibleMoves([]);
+                            }
+                        }}
                     >
                         {cellGlyph}
                     </div>
