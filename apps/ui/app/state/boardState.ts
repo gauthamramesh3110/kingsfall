@@ -11,6 +11,8 @@ interface BoardState {
 
 interface BoardStateActions {
     setPieceSelected: (piece: Piece | null) => void;
+    addTentativeMove: (piece: Piece, move: { row: number; col: number }) => void;
+    reconcileTentativeMove: () => void;
 }
 
 export const useBoardState = create<BoardState & BoardStateActions>((set) => ({
@@ -24,4 +26,17 @@ export const useBoardState = create<BoardState & BoardStateActions>((set) => ({
         console.log("Legal moves for selected piece:", legalMoves);
         set({ legalMoves });
     },
+    addTentativeMove: (piece, move) => {
+        set((state) => ({
+            upcomingBoardState: state.upcomingBoardState.map((p) => (p.type === piece.type && p.team === piece.team ? { ...p, position: move } : p))
+        }));
+
+        console.log(`Tentatively moving ${piece.type} to (${move.row}, ${move.col})`);
+        console.log("Updated upcoming board state:", useBoardState.getState().upcomingBoardState);
+    },
+    reconcileTentativeMove: () => {
+        set((state) => ({
+            boardState: state.upcomingBoardState,
+        }));
+    }
 }));

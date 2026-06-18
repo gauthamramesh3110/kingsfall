@@ -1,21 +1,24 @@
 import { BOARD_SIZE, GLYPHS } from "../constants/constants";
 import { useBoardState } from "../state/boardState";
 
-const getSquareClasses = (row: number, col: number, isSelected: boolean, isLegalMove: boolean) => {
+const getSquareClasses = (row: number, col: number, isSelected: boolean, isLegalMove: boolean, isUpcomingMove: boolean) => {
     const squareColorClass = (row + col) % 2 === 0 ? "bg-square-light" : "bg-square-dark";
     const selectedClass = isSelected ? "border-2 border-gilt" : "";
     const legalMoveClass = isLegalMove ? "border-2 border-gilt-dim" : "";
+    const upcomingMoveClass = isUpcomingMove ? "border-2 border-blue-500" : "";
+
     const cornerClass = row === 0 && col === 0 ? "rounded-tl-lg" :
         row === 0 && col === BOARD_SIZE - 1 ? "rounded-tr-lg" :
             row === BOARD_SIZE - 1 && col === 0 ? "rounded-bl-lg" :
                 row === BOARD_SIZE - 1 && col === BOARD_SIZE - 1 ? "rounded-br-lg" : "";
 
-    return `${squareColorClass} ${selectedClass} ${legalMoveClass} ${cornerClass}`.trim();
+    return `${squareColorClass} ${selectedClass} ${legalMoveClass} ${upcomingMoveClass} ${cornerClass} `.trim();
 };
 
 export default function Board() {
 
     const boardState = useBoardState(state => state.boardState);
+    const upcomingBoardState = useBoardState(state => state.upcomingBoardState);
     const pieceSelected = useBoardState(state => state.pieceSelected);
     const legalMoves = useBoardState(state => state.legalMoves);
 
@@ -27,11 +30,13 @@ export default function Board() {
                 const key = `${row}-${col}`;
 
                 const piece = boardState.find(p => p.position.row === row && p.position.col === col);
+                const upcomingPiece = upcomingBoardState.find(p => p.position.row === row && p.position.col === col);
 
                 const isSelected = !!pieceSelected && pieceSelected.position.row === row && pieceSelected.position.col === col;
                 const isLegalMove = legalMoves.some(move => move.row === row && move.col === col);
+                const isUpcomingMove = !!upcomingPiece && upcomingPiece.position.row === row && upcomingPiece.position.col === col;
 
-                const squareClasses = getSquareClasses(row, col, isSelected, isLegalMove);
+                const squareClasses = getSquareClasses(row, col, isSelected, isLegalMove, isUpcomingMove);
 
                 return (
                     <div
@@ -45,9 +50,15 @@ export default function Board() {
                                 <span className={`select-none text-team-${piece.team}`}>{GLYPHS[piece.type]}</span>
                             </div>
                         )}
-                        {!piece && isLegalMove && (
+                        {!piece && pieceSelected && isLegalMove && (
                             <div
                                 className="w-full h-full flex items-center justify-center cursor-pointer"
+                                onClick={() => {
+
+                                    useBoardState.getState().addTentativeMove(pieceSelected, { row, col });
+                                    useBoardState.getState().setPieceSelected(null);
+
+                                }}
                             >
                                 <span className="select-none text-gilt-dim">•</span>
                             </div>
