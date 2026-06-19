@@ -5,7 +5,7 @@ const getSquareClasses = (row: number, col: number, isSelected: boolean, isLegal
     const squareColorClass = (row + col) % 2 === 0 ? "bg-square-light" : "bg-square-dark";
     const selectedClass = isSelected ? "border-2 border-gilt" : "";
     const legalMoveClass = isLegalMove ? "border-2 border-gilt-dim" : "";
-    const upcomingMoveClass = isUpcomingMove ? "border-2 border-blue-500" : "";
+    const upcomingMoveClass = isUpcomingMove ? "border-2 border-gilt-dim" : "";
 
     const cornerClass = row === 0 && col === 0 ? "rounded-tl-lg" :
         row === 0 && col === BOARD_SIZE - 1 ? "rounded-tr-lg" :
@@ -34,7 +34,7 @@ export default function Board() {
 
                 const isSelected = !!pieceSelected && pieceSelected.position.row === row && pieceSelected.position.col === col;
                 const isLegalMove = legalMoves.some(move => move.row === row && move.col === col);
-                const isUpcomingMove = !!upcomingPiece && upcomingPiece.position.row === row && upcomingPiece.position.col === col;
+                const isUpcomingMove = !!upcomingPiece && upcomingPiece.position.row === row && upcomingPiece.position.col === col && upcomingPiece.type !== piece?.type && upcomingPiece.team !== piece?.team && upcomingPiece.team !== 'enemy';
 
                 const squareClasses = getSquareClasses(row, col, isSelected, isLegalMove, isUpcomingMove);
 
