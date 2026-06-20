@@ -3,7 +3,7 @@
 import { useBoardState } from "../state/boardState";
 import Board from "./Board";
 
-export default function Main() {
+export default function Game() {
     return (
         <div className="flex">
             <div className="w-1/2 h-screen grid place-items-center">

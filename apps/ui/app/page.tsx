@@ -1,9 +1,11 @@
-import Main from "./components/Game";
-import { io } from "socket.io-client";
+'use client';
+import Game from "./components/Game";
+import { socket } from "./lib/socket";
+import { useRoomState } from "./state/roomState";
+import RoomJoin from "./components/RoomJoin";
 
 export default function Home() {
-
-  const socket = io("http://localhost:8080");
+  const roomId = useRoomState(state => state.roomId);
 
   socket.on("connect", () => {
     console.log("Connected to server with id:", socket.id);
@@ -12,6 +14,7 @@ export default function Home() {
   socket.on("disconnect", () => {
     console.log("Disconnected from server");
   });
-  // return <Game />;
-  return <Main />;
+
+
+  return (roomId ? <Game /> : <RoomJoin />);
 }
