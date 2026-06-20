@@ -1,4 +1,4 @@
-import { PieceType } from "../types/gameTypes";
+import { PieceType } from "protocol";
 
 export const BOARD_SIZE = 7;
 

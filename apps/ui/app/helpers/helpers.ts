@@ -1,5 +1,5 @@
 import { BOARD_SIZE } from "../constants/constants";
-import { Piece, PieceType } from "../types/gameTypes";
+import { Piece, PieceType } from "protocol";
 
 export const getInitialBoardState = (): Piece[] => {
     return [

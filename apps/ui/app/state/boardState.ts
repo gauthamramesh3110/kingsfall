@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Piece } from "../types/gameTypes";
+import { Piece } from "protocol";
 import { getInitialBoardState, getLegalMovesForPiece } from "../helpers/helpers";
 
 interface BoardState {
