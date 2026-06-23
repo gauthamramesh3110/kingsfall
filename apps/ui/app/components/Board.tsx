@@ -1,26 +1,21 @@
 import { BOARD_SIZE, GLYPHS } from "../constants/constants";
 import { useBoardState } from "../state/boardState";
 
-const getSquareClasses = (row: number, col: number, isSelected: boolean, isLegalMove: boolean, isUpcomingMove: boolean) => {
+const getSquareClasses = (row: number, col: number) => {
     const squareColorClass = (row + col) % 2 === 0 ? "bg-square-light" : "bg-square-dark";
-    const selectedClass = isSelected ? "border-2 border-gilt" : "";
-    const legalMoveClass = isLegalMove ? "border-2 border-gilt-dim" : "";
-    const upcomingMoveClass = isUpcomingMove ? "border-2 border-gilt-dim" : "";
 
     const cornerClass = row === 0 && col === 0 ? "rounded-tl-lg" :
         row === 0 && col === BOARD_SIZE - 1 ? "rounded-tr-lg" :
             row === BOARD_SIZE - 1 && col === 0 ? "rounded-bl-lg" :
                 row === BOARD_SIZE - 1 && col === BOARD_SIZE - 1 ? "rounded-br-lg" : "";
 
-    return `${squareColorClass} ${selectedClass} ${legalMoveClass} ${upcomingMoveClass} ${cornerClass} `.trim();
+    return `${squareColorClass} ${cornerClass} `.trim();
 };
 
 export default function Board() {
 
-    const boardState = useBoardState(state => state.boardState);
-    const upcomingBoardState = useBoardState(state => state.upcomingBoardState);
-    const pieceSelected = useBoardState(state => state.pieceSelected);
-    const legalMoves = useBoardState(state => state.legalMoves);
+    const yourPieces = useBoardState(state => state.yourPieces);
+    const enemyPieces = useBoardState(state => state.enemyPieces);
 
     return (
         <div className={`grid grid-cols-7 w-full max-w-lg mx-auto rounded-lg overflow-hidden`}>
@@ -29,40 +24,26 @@ export default function Board() {
                 const col = i % BOARD_SIZE;
                 const key = `${row}-${col}`;
 
-                const piece = boardState.find(p => p.position.row === row && p.position.col === col);
-                const upcomingPiece = upcomingBoardState.find(p => p.position.row === row && p.position.col === col);
+                const squareClasses = getSquareClasses(row, col);
 
-                const isSelected = !!pieceSelected && pieceSelected.position.row === row && pieceSelected.position.col === col;
-                const isLegalMove = legalMoves.some(move => move.row === row && move.col === col);
-                const isUpcomingMove = !!upcomingPiece && upcomingPiece.position.row === row && upcomingPiece.position.col === col && upcomingPiece.type !== piece?.type && upcomingPiece.team !== piece?.team && upcomingPiece.team !== 'enemy';
-
-                const squareClasses = getSquareClasses(row, col, isSelected, isLegalMove, isUpcomingMove);
+                const yourPiece = yourPieces.find(piece => piece.position.row == row && piece.position.col == col)
+                const enemyPiece = enemyPieces.find(piece => piece.position.row == row && piece.position.col == col)
 
                 return (
                     <div
                         className={`text-3xl aspect-square flex items-center justify-center select-none ${squareClasses}`}
                         key={key}
                     >
-                        {piece && (
-                            <div
-                                className="w-full h-full flex items-center justify-center cursor-pointer"
-                                onClick={() => piece.team === "you" && useBoardState.getState().setPieceSelected(piece)}>
-                                <span className={`select-none text-team-${piece.team}`}>{GLYPHS[piece.type]}</span>
-                            </div>
-                        )}
-                        {!piece && pieceSelected && isLegalMove && (
-                            <div
-                                className="w-full h-full flex items-center justify-center cursor-pointer"
-                                onClick={() => {
-
-                                    useBoardState.getState().addTentativeMove(pieceSelected, { row, col });
-                                    useBoardState.getState().setPieceSelected(null);
-
-                                }}
-                            >
-                                <span className="select-none text-gilt-dim">•</span>
-                            </div>
-                        )}
+                        {
+                            yourPiece && (
+                                <span className="text-team-you">{GLYPHS[yourPiece.type]}</span>
+                            )
+                        }
+                        {
+                            enemyPiece && (
+                                <span className="text-team-enemy">{GLYPHS[enemyPiece.type]}</span>
+                            )
+                        }
                     </div>
                 );
             })}

@@ -1,22 +1,6 @@
 import { BOARD_SIZE } from "../constants/constants";
 import { Piece, PieceType } from "protocol";
 
-export const getInitialBoardState = (): Piece[] => {
-    return [
-        { type: 'K', team: 'you', position: { row: 6, col: 0 } },
-        { type: 'Q', team: 'you', position: { row: 6, col: 1 } },
-        { type: 'R', team: 'you', position: { row: 6, col: 2 } },
-        { type: 'N', team: 'you', position: { row: 6, col: 3 } },
-        { type: 'B', team: 'you', position: { row: 6, col: 4 } },
-
-        { type: 'K', team: 'enemy', position: { row: 0, col: BOARD_SIZE - 1 } },
-        { type: 'Q', team: 'enemy', position: { row: 0, col: BOARD_SIZE - 2 } },
-        { type: 'R', team: 'enemy', position: { row: 0, col: BOARD_SIZE - 3 } },
-        { type: 'N', team: 'enemy', position: { row: 0, col: BOARD_SIZE - 4 } },
-        { type: 'B', team: 'enemy', position: { row: 0, col: BOARD_SIZE - 5 } },
-    ] as Piece[];
-};
-
 export const getLegalMovesForPiece = (piece: Piece) => {
     const { position: { row, col }, type } = piece;
     // Placeholder logic for possible moves - to be replaced with actual game rules

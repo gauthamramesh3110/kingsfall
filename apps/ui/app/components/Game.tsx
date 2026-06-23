@@ -10,7 +10,7 @@ export default function Game() {
                 <Board />
             </div>
             <div className="w-1/2 h-screen flex flex-col gap-4 p-4 overflow-y-auto">
-                <button className="px-4 py-2 bg-gilt text-black rounded-lg" onClick={() => useBoardState.getState().reconcileTentativeMove()}>Reconcile Tentative Move</button>
+                <button className="px-4 py-2 bg-gilt text-black rounded-lg" onClick={() => { }}>Reconcile Tentative Move</button>
             </div>
         </div>
     );

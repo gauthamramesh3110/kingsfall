@@ -8,7 +8,6 @@ export default function Home() {
   const roomId = useRoomState(state => state.roomId);
   const playerId = useRoomState(state => state.playerId);
 
-
   return playerId ? (roomId ? <Game /> : <RoomJoin />) : (
     <div className="flex items-center justify-center h-screen">
       <p className="text-2xl font-bold">Connecting to server...</p>
