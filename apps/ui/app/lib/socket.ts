@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { useChallengeRequests } from "../state/challengeRequests";
 
 const PLAYER_ID_KEY = "kf.playerId";
 
@@ -22,6 +23,15 @@ export const playerId = getPlayerId();
 export const socket = io("http://localhost:8080", {
   auth: { playerId },
 });
+
+export const challengePlayer = (opponentId: string) => {
+  socket.emit("challenge", opponentId);
+}
+
+socket.on("challenge", (opponentId: string) => {
+  console.log(`Player ${opponentId} challenged you!`);
+  useChallengeRequests.getState().addChallenge(opponentId);
+})
 
 socket.on("disconnect", () => {
   console.log("Disconnected!");
