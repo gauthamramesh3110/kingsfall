@@ -13,3 +13,5 @@ export interface Room {
     seats: Record<Team, string | null>;
     board: (Piece | null)[][];
 }
+
+export const BOARD_SIZE = 7;

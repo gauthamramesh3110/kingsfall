@@ -1,16 +1,10 @@
 import { Server, type Socket } from "socket.io";
 import type { Piece, Room } from "protocol";
 import { randomUUID } from "crypto";
-import getInitialPosition from "./initialPosition.js";
-
-interface JoinRoomResponse {
-    success: boolean;
-    roomId: string;
-}
+import { initialPostition } from "./initialPosition.js";
 
 const io = new Server(8080, { cors: { origin: "*" } });
 const rooms: Record<string, Room> = {};
-const BOARD_SIZE = 7;
 
 const playerSocketIds = new Map<string, string>();
 
@@ -48,7 +42,7 @@ io.on("connection", (socket: Socket) => {
                     blue: challengerId,
                     red: playerId,
                 },
-                board: []
+                board: initialPostition
             }
             rooms[roomId] = room;
             io.sockets.sockets.get(challengerSocketId)?.join(roomId);

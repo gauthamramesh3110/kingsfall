@@ -6,8 +6,8 @@
     "outDir": "./dist",
 
     // Environment Settings
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "lib": ["esnext"],
     "types": ["node"],
