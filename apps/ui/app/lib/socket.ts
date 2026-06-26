@@ -1,5 +1,7 @@
 import { io } from "socket.io-client";
 import { useChallengeRequests } from "../state/challengeRequests";
+import { Room } from "protocol";
+import { useGameState } from "../state/game";
 
 const PLAYER_ID_KEY = "kf.playerId";
 
@@ -28,9 +30,22 @@ export const challengePlayer = (opponentId: string) => {
   socket.emit("challenge", opponentId);
 }
 
+export const acceptChallenge = (challengerId: string) => {
+  socket.emit("acceptChallenge", challengerId);
+}
+
 socket.on("challenge", (opponentId: string) => {
   console.log(`Player ${opponentId} challenged you!`);
   useChallengeRequests.getState().addChallenge(opponentId);
+})
+
+socket.on("matchStarted", (matchDetails: { roomId: string; room: Room }) => {
+  console.log("Match has Started!")
+  useGameState.setState({
+    isGameActive: true,
+    roomId: matchDetails.roomId,
+    room: matchDetails.room,
+  })
 })
 
 socket.on("disconnect", () => {

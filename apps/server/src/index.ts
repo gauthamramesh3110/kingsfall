@@ -1,5 +1,7 @@
 import { Server, type Socket } from "socket.io";
 import type { Piece, Room } from "protocol";
+import { randomUUID } from "crypto";
+import getInitialPosition from "./initialPosition.js";
 
 interface JoinRoomResponse {
     success: boolean;
@@ -34,6 +36,32 @@ io.on("connection", (socket: Socket) => {
             console.log(`No socket found for player ${opponentId}`);
         }
     });
+
+    socket.on("acceptChallenge", (challengerId: string) => {
+        const challengerSocketId = playerSocketIds.get(challengerId);
+        const accepterSocketId = playerSocketIds.get(playerId);
+
+        if (challengerSocketId && accepterSocketId) {
+            const roomId = randomUUID();
+            const room: Room = {
+                seats: {
+                    blue: challengerId,
+                    red: playerId,
+                },
+                board: []
+            }
+            rooms[roomId] = room;
+            io.sockets.sockets.get(challengerSocketId)?.join(roomId);
+            io.sockets.sockets.get(accepterSocketId)?.join(roomId);
+
+            io.to(roomId).emit("matchStarted", {
+                roomId,
+                room
+            });
+
+            console.log(`Match ${roomId} started: blue=${challengerId} red=${playerId}`);
+        }
+    })
 
     socket.on("disconnect", () => {
         playerSocketIds.delete(playerId);
