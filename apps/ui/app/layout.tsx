@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./lib/socket";
 
 export const metadata: Metadata = {
   title: "Kingsfall",
@@ -13,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-surface-page text-text-primary">{children}</body>
+      <body className="bg-surface-page text-text-muted">{children}</body>
     </html>
   );
 }

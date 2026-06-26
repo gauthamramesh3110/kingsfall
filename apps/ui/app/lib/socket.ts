@@ -1,26 +1,28 @@
 import { io } from "socket.io-client";
-import { useRoomState } from "../state/roomState";
-import { useBoardState } from "../state/boardState";
-import { Piece } from "protocol";
 
-export const socket = io("http://localhost:8080");
+const PLAYER_ID_KEY = "kf.playerId";
 
-// Listeners are attached synchronously here, before the async connection can
-// complete, so the `connect` event is never missed.
-socket.on("connect", () => {
-  useRoomState.getState().setPlayerId(socket.id || null);
+// Resolve a persistent anonymous player id at module load, before the socket
+// connects, so it can be sent with the handshake (see `auth` below). socket.id
+// is ephemeral and changes per connect; this id survives reconnects/refreshes.
+// Guarded for SSR: localStorage only exists in the browser.
+function getPlayerId(): string {
+  if (typeof window === "undefined") return "";
+
+  let playerId = localStorage.getItem(PLAYER_ID_KEY);
+  if (!playerId) {
+    playerId = crypto.randomUUID();
+    localStorage.setItem(PLAYER_ID_KEY, playerId);
+  }
+  return playerId;
+}
+
+export const playerId = getPlayerId();
+
+export const socket = io("http://localhost:8080", {
+  auth: { playerId },
 });
 
 socket.on("disconnect", () => {
-  useRoomState.getState().setPlayerId(null);
+  console.log("Disconnected!");
 });
-
-socket.on("updateBoardState", (boardState: Record<string, Piece[]>) => {
-  const yourPieces = boardState[socket.id!];
-
-  const keys = Object.keys(boardState);
-  const enemyPieces = keys.length === 2 ? boardState[keys.find(k => k !== socket.id!)!] : [];
-
-  useBoardState.getState().updateBoardState(yourPieces, enemyPieces);
-  console.log(boardState)
-})

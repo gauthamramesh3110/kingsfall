@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kingsfall — Interface Mockups (1v1)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap');
+
+  :root{
+    --ebony:#17130D; --panel:#1E1810; --inner:#120F0A;
+    --ivory:#ECE3CF; --muted:#8A8270; --faint:#5C564A;
+    --gilt:#C79A4A; --gilt-dim:#6E5A2E;
+    --you:#74A9C9; --enemy:#CC5B52; --ok:#88B36A;
+    --sq-dark:#241D13; --sq-light:#34291B;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ebony); color:var(--ivory);
+    font-family:'Helvetica Neue',Arial,sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:48px 22px 80px}
+
+  .masthead{padding:8px 0 28px; border-bottom:1px solid #2c2418; margin-bottom:34px}
+  .brand{font-family:'Cinzel',Georgia,serif; font-weight:800; font-size:32px; letter-spacing:1px; margin:0}
+  .brand .fall{color:var(--gilt)}
+  .subtitle{color:var(--muted); font-size:14px; letter-spacing:4px; text-transform:uppercase; margin-top:6px}
+  .lede{color:#cbc2ac; font-size:15px; max-width:660px; margin-top:18px}
+
+  .panel{margin:0 0 38px}
+  .panel-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+  .panel-num{font-family:'Cinzel',serif; color:var(--gilt); font-size:15px; font-weight:800}
+  .panel-title{font-family:'Cinzel',serif; font-size:20px; font-weight:600; margin:0}
+
+  .stage{background:var(--inner); border:1px solid #2a2216; border-radius:14px; padding:20px; position:relative; overflow:hidden}
+
+  .hud{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:14px}
+  .hud-tag{font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted)}
+  .hud-tag b{color:var(--ivory); font-weight:600}
+  .side-pill{display:inline-flex; align-items:center; gap:6px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+  .side-pill .sw{width:11px;height:11px;border-radius:50%;border:1px solid #463a25}
+  .sw.white{background:var(--ivory)} .sw.black{background:#221b11}
+  .tokens{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gilt)}
+  .tokens .dot{width:9px;height:9px;border-radius:50%;background:var(--gilt);display:inline-block}
+  .tokens .dot.spent{background:#3a3120}
+
+  .play{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap}
+
+  .board{display:grid; gap:0; border:2px solid #2a2216; border-radius:6px; overflow:hidden; flex:0 0 auto}
+  .cell{width:42px; height:42px; position:relative; display:flex; align-items:center; justify-content:center}
+  .cell.d{background:var(--sq-dark)} .cell.l{background:var(--sq-light)}
+  .piece{font-size:28px; line-height:1}
+  .piece.white{color:var(--ivory); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+  .piece.black{color:#211a10; -webkit-text-stroke:0.7px #8A8270; text-shadow:0 0 3px rgba(176,166,138,.30)}
+  .piece.faded{opacity:.28; filter:grayscale(.5)}
+
+  .cell.sel{box-shadow:inset 0 0 0 3px var(--gilt)}
+  .cell.tgt::after{content:""; position:absolute; width:14px;height:14px;border-radius:50%; background:var(--gilt); opacity:.85}
+  .cell.tgt.has::after{width:100%;height:100%;border-radius:0;background:none;box-shadow:inset 0 0 0 3px var(--gilt); opacity:1}
+  .cell.cover{box-shadow:inset 0 0 0 3px var(--you)}
+  .cell.cover .tick{position:absolute; top:2px; right:3px; font-size:11px; color:var(--you)}
+  .cell.openSq{box-shadow:inset 0 0 0 3px var(--enemy)}
+  .cell.openSq .x{position:absolute; top:1px; right:3px; font-size:11px; color:var(--enemy)}
+  .cell.box{box-shadow:inset 0 0 0 3px var(--gilt); background:#241c0e}
+  .cell.box .lab{position:absolute; bottom:2px; left:0; right:0; text-align:center; font-size:8px; letter-spacing:1px; color:var(--gilt)}
+
+  .blocked{position:absolute; inset:0; background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(204,91,82,.18) 5px,rgba(204,91,82,.18) 10px); box-shadow:inset 0 0 0 2px rgba(204,91,82,.5)}
+  .blocked .nolab{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:8px;color:var(--enemy);letter-spacing:.5px}
+
+  .capbadge{position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:#1a140c; border:1px solid var(--gilt-dim); color:var(--ivory); font-size:10px; padding:2px 6px; border-radius:10px; white-space:nowrap; z-index:3}
+  .capbadge.win b{color:var(--ok)} .capbadge.win s{color:var(--enemy); text-decoration:none; opacity:.8}
+  .capbadge.trade{color:var(--gilt)}
+
+  .timer{position:relative; width:56px; height:56px; flex:0 0 auto}
+  .timer svg{transform:rotate(-90deg)}
+  .timer .t{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--gilt); letter-spacing:.5px}
+
+  .side{flex:1; min-width:200px}
+  .side h4{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin:0 0 10px}
+  .side h4 .you{color:var(--you)}
+  .roster{display:flex; flex-direction:column; gap:7px}
+  .slot{display:flex; align-items:center; gap:9px; background:#1a150e; border:1px solid #2a2216; border-radius:9px; padding:7px 10px; font-size:13px}
+  .slot .g{font-size:18px; color:var(--ivory); width:20px; text-align:center}
+  .slot .nm{flex:1; color:#cbc2ac}
+  .slot .dest{font-size:11px; color:var(--gilt); letter-spacing:1px; margin-right:4px}
+  .slot .st{font-size:11px; letter-spacing:1px; text-transform:uppercase}
+  .st.locked{color:var(--ok)} .st.pending{color:var(--gilt)} .st.skip{color:var(--muted)} .st.dead{color:var(--enemy)}
+  .slot.dead .g{opacity:.4}
+
+  .note{margin-top:14px; font-size:12.5px; color:var(--muted)}
+  .note b{color:var(--ivory); font-weight:600}
+
+  .welcome{max-width:470px; margin:6px auto}
+  .idcard{display:flex; align-items:center; justify-content:space-between; background:#1a150e; border:1px solid #2a2216; border-radius:11px; padding:14px 16px; margin-bottom:18px}
+  .idcard .lab{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted)}
+  .idcard .idval{font-family:'Cinzel',serif; font-size:21px; color:var(--gilt); letter-spacing:1px; margin-top:3px}
+  .idcard .copy{font-size:11px; letter-spacing:1px; color:var(--muted); border:1px solid #2a2216; border-radius:7px; padding:7px 11px}
+  .field{margin-bottom:14px}
+  .field .lab{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px}
+  .input{background:#120f0a; border:1px solid #2a2216; border-radius:9px; padding:13px 14px; color:var(--ivory); font-size:15px; letter-spacing:1px}
+  .startbtn{background:var(--gilt); color:#1a140c; font-weight:700; border:none; border-radius:9px; padding:13px 22px; font-size:14px; letter-spacing:1px; font-family:'Cinzel',serif; width:100%; text-align:center; display:block; cursor:default}
+  .staterow{display:flex; align-items:center; gap:10px; background:#19140d; border:1px solid #2a2216; border-radius:9px; padding:11px 12px; font-size:13px; color:#cbc2ac; margin-top:10px}
+  .staterow:first-of-type{margin-top:18px}
+  .staterow .who{flex:1}
+  .mini-btn{font-size:12px; letter-spacing:.5px; border:1px solid #2a2216; border-radius:7px; padding:6px 11px; color:var(--muted)}
+  .mini-btn.ok{color:var(--ok); border-color:#33442a} .mini-btn.no{color:var(--enemy); border-color:#43221f}
+  .dotpulse{width:8px;height:8px;border-radius:50%;background:var(--gilt);flex:0 0 auto}
+
+  .overlay{position:absolute; inset:0; background:rgba(11,9,6,.74); backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center; padding:18px}
+  .card{background:var(--panel); border:1px solid var(--gilt-dim); border-radius:14px; padding:24px 26px; max-width:380px; text-align:center}
+  .card .k{font-family:'Cinzel',serif; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--muted)}
+  .card .big{font-family:'Cinzel',serif; font-size:30px; font-weight:800; margin:8px 0 4px}
+  .card .big.win{color:var(--gilt)}
+  .card .sub{font-size:13px; color:#cbc2ac; margin-top:6px}
+  .choices{display:flex; gap:10px; justify-content:center; margin:16px 0 4px}
+  .choice{background:#1a150e; border:1px solid #2a2216; border-radius:10px; padding:12px 14px; min-width:74px}
+  .choice .g{font-size:26px; color:var(--ivory)}
+  .choice .nm{font-size:11px; color:var(--muted); margin-top:4px; letter-spacing:1px}
+  .choice.pick{border-color:var(--gilt); box-shadow:0 0 0 2px rgba(199,154,74,.3)}
+  .cap-left{font-size:12px; color:var(--gilt); margin-top:12px}
+
+  .caption{margin-top:14px; color:#bdb4a0; font-size:14px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:11px}
+  .chip{font-size:11.5px; color:var(--muted); border:1px solid #2c2418; border-radius:20px; padding:4px 11px}
+  .chip b{color:var(--gilt); font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <h1 class="brand">KINGS<span class="fall">FALL</span></h1>
+    <div class="subtitle">Interface Mockups &middot; Two-Player</div>
+    <p class="lede">Six screens for the head-to-head game. You challenge one opponent by ID; one of you plays White, the other Black. Boards are 7&times;7 and each turn runs on a 15-second planning clock. Gilt marks anything you act on; crimson marks danger and your opponent&rsquo;s revealed moves.</p>
+  </div>
+  <div id="panels"></div>
+</div>
+
+<script>
+const G={K:'\u265A',Q:'\u265B',R:'\u265C',N:'\u265E',B:'\u265D'};
+const NAME={K:'King',Q:'Queen',R:'Rook',N:'Knight',B:'Bishop'};
+function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;}
+
+function buildBoard(cfg){
+  const N=cfg.size||7;
+  const b=el('div','board'); b.style.gridTemplateColumns=`repeat(${N},42px)`;
+  const pieceAt={}; (cfg.pieces||[]).forEach(p=>pieceAt[p.sq]=p);
+  const fx=cfg.fx||{};
+  const setOf=k=>new Set(fx[k]||[]);
+  const cover=setOf('cover'), open=setOf('openSq'), box=setOf('box'), blocked=setOf('blocked'), picks=setOf('picks');
+  const caps={}; (fx.caps||[]).forEach(c=>caps[c.sq]=c);
+  for(let r=1;r<=N;r++){
+    const rank=N-r+1;
+    for(let c=1;c<=N;c++){
+      const sq=String.fromCharCode(96+c)+rank;
+      const cell=el('div','cell '+(((r+c)%2)?'l':'d'));
+      if(fx.sel===sq) cell.classList.add('sel');
+      if(fx.tgt===sq || picks.has(sq)){ cell.classList.add('tgt'); if(pieceAt[sq]) cell.classList.add('has'); }
+      if(cover.has(sq)){ cell.classList.add('cover'); cell.appendChild(el('span','tick','\u2713')); }
+      if(open.has(sq)){ cell.classList.add('openSq'); cell.appendChild(el('span','x','\u2715')); }
+      if(box.has(sq)){ cell.classList.add('box'); cell.appendChild(el('span','lab','REVIVE')); }
+      const p=pieceAt[sq];
+      if(p){ cell.appendChild(el('span','piece '+p.team+(p.fade?' faded':''),G[p.t])); }
+      if(blocked.has(sq)){ const bl=el('div','blocked'); bl.appendChild(el('span','nolab','taken')); cell.appendChild(bl); }
+      const cap=caps[sq];
+      if(cap){
+        if(cap.trade) cell.appendChild(el('div','capbadge trade',cap.trade));
+        else cell.appendChild(el('div','capbadge win',`<b>${cap.win}</b> \u25B8 <s>${cap.lose}</s>`));
+      }
+      b.appendChild(cell);
+    }
+  }
+  return b;
+}
+
+function buildTimer(time,pct){
+  const r=22, c=2*Math.PI*r, off=c*(1-pct/100);
+  const t=el('div','timer');
+  t.innerHTML=`<svg width="56" height="56" viewBox="0 0 56 56">
+    <circle cx="28" cy="28" r="${r}" fill="none" stroke="#2a2216" stroke-width="5"/>
+    <circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--gilt)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+  </svg><div class="t">${time}</div>`;
+  return t;
+}
+
+function buildRoster(title,list){
+  const s=el('div','side'); s.appendChild(el('h4',null,title));
+  const rs=el('div','roster');
+  list.forEach(p=>{
+    const slot=el('div','slot'+(p.state==='dead'?' dead':''));
+    slot.appendChild(el('span','g',G[p.t]));
+    slot.appendChild(el('span','nm',(p.nm||NAME[p.t])));
+    if(p.dest) slot.appendChild(el('span','dest','\u2192 '+p.dest));
+    const stMap={locked:'Locked',pending:'Choosing\u2026',skip:'Skip',dead:'Captured'};
+    slot.appendChild(el('span','st '+p.state,stMap[p.state]));
+    rs.appendChild(slot);
+  });
+  s.appendChild(rs); return s;
+}
+
+function buildHud(left,right){
+  const h=el('div','hud'); h.appendChild(el('div','hud-tag',left)); if(right) h.appendChild(right); return h;
+}
+function sidePill(color){ const s=el('div','side-pill'); s.innerHTML='You play <span class="sw '+color+'"></span> <b style="color:var(--ivory)">'+(color==='white'?'White':'Black')+'</b>'; return s; }
+function tokens(total,spent){ const t=el('div','tokens'); t.appendChild(el('span',null,'Resurrections')); for(let i=0;i<total;i++) t.appendChild(el('span','dot'+(i<spent?' spent':''))); return t; }
+
+function panel(cfg){
+  const p=el('div','panel');
+  const head=el('div','panel-head');
+  head.appendChild(el('span','panel-num',cfg.num));
+  head.appendChild(el('h2','panel-title',cfg.title));
+  p.appendChild(head);
+  const stage=el('div','stage'); cfg.build(stage); p.appendChild(stage);
+  const cap=el('div','caption',cfg.caption);
+  if(cfg.chips){ const ch=el('div','chips'); cfg.chips.forEach(c=>ch.appendChild(el('span','chip',c))); cap.appendChild(ch); }
+  p.appendChild(cap);
+  return p;
+}
+
+const panels=[
+{ num:'01', title:'Welcome & challenge by ID',
+  caption:'You land here with your own player ID, ready to share. Paste a friend\u2019s ID and challenge them directly \u2014 no lobby, no matchmaking queue. They get an incoming prompt; once they accept, the match begins and colours are assigned.',
+  chips:['Your <b>ID</b> shown','Challenge <b>by ID</b>','Opponent <b>accepts</b>','Colours auto-assigned'],
+  build:(s)=>{
+    const w=el('div','welcome');
+    const id=el('div','idcard');
+    id.innerHTML='<div><div class="lab">Your player ID</div><div class="idval">KF-7F3A-9C2</div></div><div class="copy">COPY</div>';
+    w.appendChild(id);
+    const f=el('div','field');
+    f.innerHTML='<span class="lab">Challenge a player</span><div class="input">KF-3B8X-4D1</div>';
+    w.appendChild(f);
+    w.appendChild(el('button','startbtn','CHALLENGE'));
+    const s1=el('div','staterow'); s1.innerHTML='<span class="dotpulse"></span><span class="who">Waiting for <b style="color:var(--ivory)">KF-3B8X-4D1</b> to accept\u2026</span><span class="mini-btn">Cancel</span>';
+    const s2=el('div','staterow'); s2.innerHTML='<span class="who"><b style="color:var(--ivory)">KF-9Q2M-7A0</b> wants to play you</span><span class="mini-btn no">Decline</span><span class="mini-btn ok">Accept</span>';
+    w.appendChild(s1); w.appendChild(s2);
+    s.appendChild(w);
+  }
+},
+{ num:'02', title:'Planning phase \u2014 move all five, under the clock',
+  caption:'Now you command your whole army. You set a destination for each of your five pieces (or skip it) before the 15-second clock runs out. Two of your own pieces can\u2019t target the same square. Your opponent is doing the same in secret \u2014 their moves stay hidden until the buzzer.',
+  chips:['<b>15s</b> clock','Move <b>all 5</b>','No <b>shared squares</b>','<b>Skip</b> = stay','Opponent hidden'],
+  build:(s)=>{
+    const hud=buildHud('Turn <b>9</b> / 40', buildTimer('0:11',73)); hud.insertBefore(sidePill('white'), hud.lastChild); s.appendChild(hud);
+    const play=el('div','play');
+    play.appendChild(buildBoard({size:7,
+      pieces:[
+        {sq:'d2',t:'K',team:'white'},{sq:'f1',t:'Q',team:'white'},{sq:'a3',t:'R',team:'white'},
+        {sq:'e3',t:'N',team:'white'},{sq:'c2',t:'B',team:'white'},
+        {sq:'d6',t:'K',team:'black'},{sq:'f5',t:'Q',team:'black'},{sq:'b6',t:'R',team:'black'},{sq:'e5',t:'B',team:'black'}
+      ],
+      fx:{ sel:'e3', tgt:'d5', picks:['a6','c5'], blocked:['f4'] }}));
+    play.appendChild(buildRoster('Your pieces this turn',[
+      {t:'K',state:'skip'},{t:'Q',state:'locked',dest:'f4'},{t:'R',state:'locked',dest:'a6'},
+      {t:'N',state:'pending'},{t:'B',state:'locked',dest:'c5'}
+    ]));
+    s.appendChild(play);
+    s.appendChild(el('div','note','The framed square <b>e3</b> is the piece you\u2019re moving now (its target <b>d5</b> is the gilt ring). Other gilt dots are destinations you\u2019ve locked; <b>f4</b> is struck out because your Queen already claimed it. Your opponent\u2019s picks are hidden.'));
+  }
+},
+{ num:'03', title:'Resolution \u2014 both armies move at once',
+  caption:'At zero, both sides reveal and resolve simultaneously off end-squares. On a contested square the higher strength survives and takes it; equal strength trades both away. The king loses every fight.',
+  chips:['Resolved on <b>end-squares</b>','Higher <b>strength</b> wins','Equal = <b>trade</b>','King loses all'],
+  build:(s)=>{
+    s.appendChild(buildHud('Turn <b>9</b> \u2014 <b style="color:var(--gilt)">Resolving</b>', null));
+    const play=el('div','play');
+    play.appendChild(buildBoard({size:7,
+      pieces:[
+        {sq:'c2',t:'K',team:'white'},{sq:'d4',t:'R',team:'white'},{sq:'b5',t:'N',team:'white'},
+        {sq:'d4',t:'B',team:'black',fade:true},
+        {sq:'d6',t:'K',team:'black'},{sq:'a4',t:'R',team:'black'}
+      ],
+      fx:{ caps:[ {sq:'d4',win:'R 4',lose:'B 3'}, {sq:'e5',trade:'Q5 = Q5'} ] }}));
+    const side=el('div','side');
+    side.appendChild(el('h4',null,'What just resolved'));
+    side.innerHTML+=
+      '<div class="slot"><span class="g">\u265C</span><span class="nm">Rook takes d4</span><span class="st locked">+B</span></div>'+
+      '<div class="slot"><span class="g">\u265B</span><span class="nm">Queens collide on e5</span><span class="st dead">trade</span></div>'+
+      '<div class="slot dead"><span class="g">\u265D</span><span class="nm">Black Bishop</span><span class="st dead">captured</span></div>';
+    play.appendChild(side);
+    s.appendChild(play);
+    s.appendChild(el('div','note','At <b>d4</b> your Rook (4) outranks the Black Bishop (3) and survives. At <b>e5</b> both Queens chose the same square \u2014 equal strength, so both leave the board.'));
+  }
+},
+{ num:'04', title:'The king-hunt \u2014 coverage, not luck',
+  caption:'You force the opponent\u2019s king when every square it could move to (plus staying put) is covered by one of your pieces that can reach it this turn. Covered escapes glow steel; any uncovered escape glows crimson. Seal the last gap and the capture is guaranteed.',
+  chips:['Escapes <b>mapped</b>','Covered = <b>steel</b>','Open = <b>crimson</b>','Mate when <b>0 open</b>'],
+  build:(s)=>{
+    s.appendChild(buildHud('Opponent king \u2014 <b style="color:var(--enemy)">1 escape open</b>', buildTimer('0:08',53)));
+    const play=el('div','play');
+    play.appendChild(buildBoard({size:7,
+      pieces:[
+        {sq:'a7',t:'K',team:'black'},
+        {sq:'e7',t:'Q',team:'white'},{sq:'a3',t:'R',team:'white'},{sq:'d4',t:'B',team:'white'},{sq:'f2',t:'K',team:'white'}
+      ],
+      fx:{ cover:['b7','a6','a7'], openSq:['b6'] }}));
+    const side=el('div','side');
+    side.appendChild(el('h4',null,'Opponent king\u2019s options'));
+    side.innerHTML+=
+      '<div class="slot"><span class="g" style="color:var(--you)">\u2713</span><span class="nm">b7 \u2014 covered by Queen</span></div>'+
+      '<div class="slot"><span class="g" style="color:var(--you)">\u2713</span><span class="nm">a6 \u2014 covered by Rook</span></div>'+
+      '<div class="slot"><span class="g" style="color:var(--you)">\u2713</span><span class="nm">stay a7 \u2014 covered by Bishop</span></div>'+
+      '<div class="slot"><span class="g" style="color:var(--enemy)">\u2715</span><span class="nm">b6 \u2014 still open</span></div>';
+    play.appendChild(side);
+    s.appendChild(play);
+    s.appendChild(el('div','note','Three of the king\u2019s four end-options are covered. Bring one more attacker onto <b>b6</b> and there is no square it can survive on.'));
+  }
+},
+{ num:'05', title:'Resurrection \u2014 bring a piece back',
+  caption:'End a turn on your resurrection box, deep in enemy territory, and you may revive one of your own captured pieces. It returns to its home square at full strength next turn. It\u2019s capped per match so a losing side can\u2019t stall forever.',
+  chips:['Box in <b>enemy ground</b>','Revive <b>one</b>','Returns <b>home</b>','<b>Capped</b> per match','Never the king'],
+  build:(s)=>{
+    const hud=buildHud('Turn <b>23</b> / 40', tokens(2,1)); hud.insertBefore(sidePill('white'), hud.lastChild); s.appendChild(hud);
+    const play=el('div','play');
+    play.appendChild(buildBoard({size:7,
+      pieces:[
+        {sq:'d1',t:'K',team:'white'},{sq:'f1',t:'Q',team:'white'},{sq:'c7',t:'B',team:'white'},
+        {sq:'a7',t:'K',team:'black'},{sq:'g7',t:'N',team:'black'}
+      ],
+      fx:{ box:['c7'] }}));
+    s.appendChild(play);
+    const ov=el('div','overlay'); const card=el('div','card');
+    card.innerHTML=
+      '<div class="k">Box reached \u2014 Kingsfall box</div>'+
+      '<div class="big" style="font-size:22px; color:var(--gilt)">Revive a piece</div>'+
+      '<div class="sub">It returns to its home square at full strength.</div>'+
+      '<div class="choices">'+
+        '<div class="choice pick"><div class="g">\u265C</div><div class="nm">ROOK</div></div>'+
+        '<div class="choice"><div class="g">\u265E</div><div class="nm">KNIGHT</div></div>'+
+      '</div>'+
+      '<div class="cap-left">1 resurrection left after this</div>';
+    ov.appendChild(card); s.appendChild(ov);
+    s.appendChild(el('div','note','Your Bishop reached the gilt box at <b>c7</b>. Pick which captured piece returns \u2014 the choice resolves at the start of the next turn.'));
+  }
+},
+{ num:'06', title:'Game over \u2014 and the edge cases',
+  caption:'Capturing the enemy king ends it immediately. Two rarer endings reuse this banner: both kings falling on the same turn is a draw, and hitting the move cap with both kings alive is settled on captured-material points \u2014 a tiebreaker only.',
+  chips:['King captured = <b>win</b>','Double KO = <b>draw</b>','Move cap \u2192 <b>material</b>','Tiebreaker only'],
+  build:(s)=>{
+    const play=el('div','play');
+    play.appendChild(buildBoard({size:7,
+      pieces:[
+        {sq:'b6',t:'R',team:'white'},{sq:'b6',t:'K',team:'black',fade:true},
+        {sq:'f2',t:'K',team:'white'},{sq:'d1',t:'Q',team:'white'}
+      ],
+      fx:{ caps:[{sq:'b6',win:'R 4',lose:'K 1'}] }}));
+    s.appendChild(play);
+    const ov=el('div','overlay'); const card=el('div','card');
+    card.innerHTML=
+      '<div class="k">Turn 31</div>'+
+      '<div class="big win">VICTORY</div>'+
+      '<div class="sub">Black king captured on b6 by your Rook.</div>'+
+      '<div class="chips" style="justify-content:center; margin-top:16px">'+
+        '<span class="chip">Draw \u2014 <b>both kings fell</b></span>'+
+        '<span class="chip">Cap reached \u2014 <b>material decides</b></span>'+
+      '</div>';
+    ov.appendChild(card); s.appendChild(ov);
+    s.appendChild(el('div','note','The primary end state. The two chips inside the card are the alternate endings that reuse this same banner with different copy.'));
+  }
+}
+];
+
+const root=document.getElementById('panels');
+panels.forEach(c=>root.appendChild(panel(c)));
+</script>
+</body>
+</html>
