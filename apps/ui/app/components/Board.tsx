@@ -2,6 +2,7 @@ import { BOARD_SIZE, Position, Team } from "protocol"
 import { useGameState } from "../state/game";
 import { GLYPHS } from "../constants/constants";
 import { useState } from "react";
+import { playerId } from "../lib/socket";
 
 const TEAM_COLORS: Record<Team, string> = {
     blue: "text-team-blue",
@@ -31,19 +32,21 @@ export default function Board() {
                         const piece = room?.board[i][j];
 
                         const bgClass = ((i + j) % 2 === 0) ? "bg-square-dark" : "bg-square-light";
-                        const clickClass = piece ? 'cursor-pointer' : '';
+                        const clickClass = piece && room.seats[piece.team] === playerId ? 'cursor-pointer' : 'cursor-default';
                         const pieceColorClass = piece ? TEAM_COLORS[piece.team] : ''
                         const cornerClass = CORNER_POSITIONS[i]?.[j] ? CORNER_POSITIONS[i][j] : '';
                         const selectedClass = (selectedSquare && selectedSquare.row == i && selectedSquare.col == j) ? 'border-2 border-gilt' : '';
                         const validMoveClass = (
-                            selectedSquare && room?.board[selectedSquare.row][selectedSquare.col]?.validMoves.some(position => position.row == i && position.col == j)
+                            selectedSquare &&
+                            room?.board[i][j] === null &&
+                            room?.board[selectedSquare.row][selectedSquare.col]?.validMoves.some(position => position.row == i && position.col == j)
                         ) ? 'border-2 border-gilt-dim' : '';
 
                         return (
                             <div
                                 key={`${i}-${j}`}
                                 className={`aspect-square w-16 flex justify-center items-center ${bgClass} ${clickClass} ${cornerClass} ${selectedClass} ${validMoveClass}`}
-                                onClick={piece ? () => {
+                                onClick={piece && room.seats[piece.team] === playerId ? () => {
                                     setSelectedSquare({
                                         row: i,
                                         col: j
