@@ -7,6 +7,7 @@ export interface Piece {
     type: PieceType;
     team: Team;
     position: Position;
+    validMoves: Position[];
 }
 
 export interface Room {

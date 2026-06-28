@@ -1,6 +1,7 @@
 import { BOARD_SIZE } from "protocol";
-import type { Piece, PieceType, Team } from "protocol";
+import type { Piece, PieceType, Position, Team } from "protocol";
 import { randomUUID } from "crypto";
+import { getValidMoves } from "./validMoves";
 
 const pieceOrder: PieceType[] = ['K', 'Q', 'B', 'R', 'N'];
 
@@ -14,6 +15,7 @@ export const initialPostition: (Piece | null)[][] = Array.from({ length: BOARD_S
     return Array.from({ length: BOARD_SIZE }, (_, j): Piece | null => {
         let type: PieceType | null = null;
         let team: Team | null = null;
+        let position: Position = { row: i, col: j };
 
         if (i === 0) {
             type = firstRowOrder[j] ?? null;
@@ -29,7 +31,8 @@ export const initialPostition: (Piece | null)[][] = Array.from({ length: BOARD_S
             id: randomUUID(),
             type,
             team,
-            position: { row: i, col: j },
+            position,
+            validMoves: getValidMoves(type, position),
         };
     });
 })
