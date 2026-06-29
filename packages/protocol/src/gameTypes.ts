@@ -7,12 +7,11 @@ export interface Piece {
     type: PieceType;
     team: Team;
     position: Position;
-    validMoves: Position[];
 }
 
 export interface Room {
     seats: Record<Team, string | null>;
-    board: (Piece | null)[][];
+    board: Piece[];
 }
 
 export const BOARD_SIZE = 7;

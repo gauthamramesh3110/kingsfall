@@ -3,6 +3,8 @@ import { useGameState, useMovesState } from "../state/game";
 import { GLYPHS } from "../constants/constants";
 import { useState } from "react";
 import { playerId } from "../lib/socket";
+import { getValidMovesForPiece } from "../lib/validMoves";
+import { getTeamByPlayerId } from "../helpers/helpers";
 
 const TEAM_COLORS: Record<Team, string> = {
     blue: "text-team-blue",
@@ -22,9 +24,7 @@ const CORNER_POSITIONS: Record<number, Record<number, string>> = {
 
 export default function Board() {
     const room = useGameState(state => state.room);
-    const moves = useMovesState(state => state.moves);
-    const addMove = useMovesState(state => state.addMove);
-
+    const pieces = room?.board ?? [];
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
 
     return (
@@ -32,44 +32,32 @@ export default function Board() {
             {
                 Array.from({ length: BOARD_SIZE }, (_, i) => {
                     return Array.from({ length: BOARD_SIZE }, (_, j) => {
-                        const piece = room?.board[i][j];
-                        const move = moves[i][j];
+                        const piece = pieces.find((candidate) => candidate.position.row === i && candidate.position.col === j);
+                        const team = room ? getTeamByPlayerId(room, playerId) : undefined;
 
-                        const isValidMove = (
-                            selectedSquare &&
-                            room?.board[i][j] === null &&
-                            room?.board[selectedSquare.row][selectedSquare.col]?.validMoves.some(position => position.row == i && position.col == j)
-                        );
+                        const isSelected = selectedSquare?.row == i && selectedSquare.col == j;
+                        const isSelectable = piece && team && piece.team == team;
 
                         const bgClass = ((i + j) % 2 === 0) ? "bg-square-dark" : "bg-square-light";
-                        const clickClass = piece && room.seats[piece.team] === playerId ? 'cursor-pointer' : 'cursor-default';
-                        const pieceColorClass = piece ? TEAM_COLORS[piece.team] : ''
                         const cornerClass = CORNER_POSITIONS[i]?.[j] ? CORNER_POSITIONS[i][j] : '';
-                        const selectedClass = (selectedSquare && selectedSquare.row == i && selectedSquare.col == j) ? 'border-2 border-gilt' : '';
-                        const validMoveClass = isValidMove ? 'border-2 border-gilt-dim' : '';
-
+                        const selectedClass = isSelected ? 'border-2 border-gilt' : '';
+                        const selectableClass = isSelectable ? 'cursor-pointer' : '';
+                        const squareClass = `${bgClass} ${cornerClass} ${selectedClass} ${selectableClass}`;
                         return (
                             <div
                                 key={`${i}-${j}`}
-                                className={`aspect-square w-16 relative flex justify-center items-center ${bgClass} ${clickClass} ${cornerClass} ${selectedClass} ${validMoveClass}`}
-                                onClick={piece && room.seats[piece.team] === playerId ? () => {
-                                    setSelectedSquare({
-                                        row: i,
-                                        col: j
-                                    });
-                                } : isValidMove ? () => {
-                                    console.log(`Selected ${i}, ${j}`);
-                                    const selectedPiece = room.board[selectedSquare.row][selectedSquare.col]!;
-                                    addMove(
-                                        selectedPiece, { row: i, col: j }
-                                    );
-                                } : undefined}
+                                className={`aspect-square w-16 relative flex justify-center items-center ${squareClass}`}
+                                onClick={
+                                    isSelectable ? () => {
+                                        setSelectedSquare({
+                                            row: i,
+                                            col: j
+                                        })
+                                    } : undefined
+                                }
                             >
                                 {
-                                    piece && <span className={`text-3xl ${pieceColorClass}`}>{GLYPHS[piece.type]}</span>
-                                }
-                                {
-                                    move && <span className={`absolute bottom-1 right-1 text-xs ${pieceColorClass}`}>{GLYPHS[move.type]}</span>
+                                    piece && <span className={`text-3xl select-none ${TEAM_COLORS[piece.team]}`}>{GLYPHS[piece.type]}</span>
                                 }
                             </div>
                         )
