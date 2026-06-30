@@ -24,6 +24,7 @@ const CORNER_POSITIONS: Record<number, Record<number, string>> = {
 
 export default function Board() {
     const room = useGameState(state => state.room);
+    const tentativeMoves = useGameState(state => state.tentativeMoves);
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
 
     return (
@@ -33,6 +34,7 @@ export default function Board() {
                     return Array.from({ length: BOARD_SIZE }, (_, j) => {
                         const piece = room?.board[i][j]
                         const team = room ? getTeamByPlayerId(room, playerId) : undefined;
+                        const tentativeMove = tentativeMoves[i][j];
 
                         const isSelected = selectedSquare?.row == i && selectedSquare.col == j;
                         const isSelectable = piece && team && piece.team == team;
@@ -60,6 +62,9 @@ export default function Board() {
                             >
                                 {
                                     piece && <span className={`text-3xl select-none ${TEAM_COLORS[piece.team]}`}>{GLYPHS[piece.type]}</span>
+                                }
+                                {
+                                    tentativeMove && <span className={`absolute bottom-0 right-1 text-l opacity-15 select-none ${TEAM_COLORS[tentativeMove.team]}`}>{GLYPHS[tentativeMove.type]}</span>
                                 }
                             </div>
                         )

@@ -41,11 +41,8 @@ socket.on("challenge", (opponentId: string) => {
 
 socket.on("matchStarted", (matchDetails: { roomId: string; room: Room }) => {
   console.log("Match has Started!")
-  useGameState.setState({
-    isGameActive: true,
-    roomId: matchDetails.roomId,
-    room: matchDetails.room,
-  })
+  useGameState.getState().setRoomFromServer(matchDetails.roomId, matchDetails.room);
+  useGameState.getState().startGame();
 })
 
 socket.on("disconnect", () => {
