@@ -10,8 +10,6 @@ interface GameState {
     startGame: () => void;
     setRoomFromServer: (roomId: string, room: Room) => void;
     setTentativeMove: (pieceId: string, tentativePosition: Position) => void;
-    clearTentativeMove: (pieceId: string) => void;
-    resetTentativeMoves: () => void;
 }
 
 export const useGameState = create<GameState>((set) => ({
@@ -35,14 +33,25 @@ export const useGameState = create<GameState>((set) => ({
     },
 
     setTentativeMove: (pieceId, tentativePosition) => {
-        null
-    },
+        set((state) => {
+            let movedPiece: Piece | null = null;
 
-    clearTentativeMove: (pieceId) => {
-        null
-    },
+            // Clear any existing tentative cell for this piece.
+            const next = state.tentativeMoves.map((row) =>
+                row.map((cell) => {
+                    if (cell?.id === pieceId) {
+                        movedPiece = cell;
+                        return null;
+                    }
+                    return cell;
+                })
+            );
 
-    resetTentativeMoves: () => {
-        null
-    }
+            if (movedPiece) {
+                next[tentativePosition.row][tentativePosition.col] = movedPiece;
+            }
+
+            return { tentativeMoves: next };
+        });
+    },
 }));

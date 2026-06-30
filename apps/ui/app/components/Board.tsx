@@ -25,6 +25,7 @@ const CORNER_POSITIONS: Record<number, Record<number, string>> = {
 export default function Board() {
     const room = useGameState(state => state.room);
     const tentativeMoves = useGameState(state => state.tentativeMoves);
+    const setTentativeMove = useGameState(state => state.setTentativeMove);
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
 
     const validMoves = useMemo(
@@ -52,23 +53,26 @@ export default function Board() {
                         const cornerClass = CORNER_POSITIONS[i]?.[j] ? CORNER_POSITIONS[i][j] : '';
                         const selectedClass = isSelected ? 'border-2 border-gilt' : '';
                         const selectableClass = isSelectable ? 'cursor-pointer' : '';
-                        const validMoveClass = isValidMove ? 'ring-2 ring-inset ring-gilt-dim' : '';
+                        const validMoveClass = isValidMove ? 'cursor-pointer ring-2 ring-inset ring-gilt-dim' : '';
                         const squareClass = `${bgClass} ${cornerClass} ${selectedClass} ${selectableClass} ${validMoveClass}`;
 
                         return (
                             <div
                                 key={`${i}-${j}`}
                                 className={`aspect-square w-16 relative flex justify-center items-center ${squareClass}`}
-                                onClick={
-                                    isSelectable
-                                        ? () => {
-                                            setSelectedSquare({
-                                                row: i,
-                                                col: j
-                                            })
-                                        }
-                                        : undefined
-                                }
+                                onClick={() => {
+                                    if (isValidMove && selectedSquare) {
+                                        console.log('Setting Move')
+                                        const selectedPiece = room?.board[selectedSquare.row][selectedSquare.col]
+                                        setTentativeMove(selectedPiece!.id, { row: i, col: j });
+                                        setSelectedSquare(null);
+                                    } else if (isSelectable) {
+                                        setSelectedSquare({
+                                            row: i,
+                                            col: j
+                                        })
+                                    }
+                                }}
                             >
                                 {
                                     piece && <span className={`text-3xl select-none ${TEAM_COLORS[piece.team]}`}>{GLYPHS[piece.type]}</span>
@@ -81,6 +85,6 @@ export default function Board() {
                     })
                 })
             }
-        </div>
+        </div >
     )
 }
