@@ -1,8 +1,7 @@
-import type { Piece, Position } from "protocol";
+import type { Piece, PieceType, Position } from "protocol";
+import { BOARD_SIZE } from "protocol";
 
-function hasMoveAt(moves: Position[], position: Position): boolean {
-    return moves.some((move) => move.row === position.row && move.col === position.col);
-}
+type Board = (Piece | null)[][];
 
 const ORTHOGONAL_DIRECTIONS: Position[] = [
     { row: -1, col: 0 },
@@ -29,117 +28,61 @@ const KNIGHT_DELTAS: Position[] = [
     { row: 2, col: 1 },
 ];
 
+const MOVEMENT: Record<PieceType, { directions: Position[]; sliding: boolean }> = {
+    K: { directions: [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS], sliding: false },
+    Q: { directions: [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS], sliding: true },
+    R: { directions: ORTHOGONAL_DIRECTIONS, sliding: true },
+    B: { directions: DIAGONAL_DIRECTIONS, sliding: true },
+    N: { directions: KNIGHT_DELTAS, sliding: false },
+};
+
 function isInBounds(position: Position): boolean {
-    return position.row >= 0 && position.row < 7 && position.col >= 0 && position.col < 7;
+    return position.row >= 0 && position.row < BOARD_SIZE && position.col >= 0 && position.col < BOARD_SIZE;
 }
 
-function getPieceAt(pieces: Piece[], position: Position): Piece | undefined {
-    return pieces.find((piece) => piece.position.row === position.row && piece.position.col === position.col);
-}
-
-function addMoveIfValid(
-    moves: Position[],
-    pieces: Piece[],
-    selectedPiece: Piece,
-    position: Position,
-): boolean {
-    if (!isInBounds(position)) {
-        return false;
-    }
-
-    if (hasMoveAt(moves, position)) {
-        return false;
-    }
-
-    const occupant = getPieceAt(pieces, position);
-    if (!occupant) {
-        moves.push(position);
-        return true;
-    }
-
-    if (occupant.team !== selectedPiece.team) {
-        moves.push(position);
-    }
-
-    return false;
-}
-
-export function getProjectedBoard(pieces: Piece[], tentativeMoves: Record<string, Position>): Piece[] {
-    const bySquare = new Map<string, Piece>();
-
-    for (const piece of pieces) {
-        const target = tentativeMoves[piece.id];
-        const position = target ?? piece.position;
-        const key = `${position.row},${position.col}`;
-        const existing = bySquare.get(key);
-
-        if (!existing) {
-            bySquare.set(key, { ...piece, position });
-            continue;
-        }
-
-        // Collision: the piece that moved here captures the stationary one.
-        if (target !== undefined && tentativeMoves[existing.id] === undefined) {
-            bySquare.set(key, { ...piece, position });
-        }
-    }
-
-    return [...bySquare.values()];
-}
-
-export function getValidMovesForPiece(pieces: Piece[], selectedPosition: Position): Position[] {
-    const selectedPiece = getPieceAt(pieces, selectedPosition);
+export function getValidMovesForPiece(
+    board: Board,
+    tentativeMoves: Board,
+    selectedPosition: Position,
+): Position[] {
+    // The piece's identity and movement pattern come from the committed board.
+    const selectedPiece = board[selectedPosition.row][selectedPosition.col];
     if (!selectedPiece) {
         return [];
     }
 
+    const { directions, sliding } = MOVEMENT[selectedPiece.type];
     const moves: Position[] = [];
-    const { row, col } = selectedPosition;
 
-    switch (selectedPiece.type) {
-        case "K": {
-            for (const direction of [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
-                const nextPosition = { row: row + direction.row, col: col + direction.col };
-                addMoveIfValid(moves, pieces, selectedPiece, nextPosition);
-            }
-            break;
-        }
-        case "Q": {
-            for (const direction of [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
-                let nextPosition = { row: row + direction.row, col: col + direction.col };
-                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
-                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
+    for (const direction of directions) {
+        let position = {
+            row: selectedPosition.row + direction.row,
+            col: selectedPosition.col + direction.col,
+        };
+
+        while (isInBounds(position)) {
+            // Blocking is determined by the tentative (projected) board.
+            const blocker = tentativeMoves[position.row][position.col];
+
+            if (!blocker) {
+                moves.push(position);
+            } else {
+                if (blocker.team !== selectedPiece.team) {
+                    moves.push(position); // capture
                 }
+                break; // blocked, can't move past it
             }
-            break;
-        }
-        case "R": {
-            for (const direction of ORTHOGONAL_DIRECTIONS) {
-                let nextPosition = { row: row + direction.row, col: col + direction.col };
-                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
-                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
-                }
+
+            if (!sliding) {
+                break;
             }
-            break;
-        }
-        case "B": {
-            for (const direction of DIAGONAL_DIRECTIONS) {
-                let nextPosition = { row: row + direction.row, col: col + direction.col };
-                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
-                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
-                }
-            }
-            break;
-        }
-        case "N": {
-            for (const delta of KNIGHT_DELTAS) {
-                const nextPosition = { row: row + delta.row, col: col + delta.col };
-                addMoveIfValid(moves, pieces, selectedPiece, nextPosition);
-            }
-            break;
+
+            position = {
+                row: position.row + direction.row,
+                col: position.col + direction.col,
+            };
         }
     }
 
     return moves;
 }
-

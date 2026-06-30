@@ -1,9 +1,9 @@
 import { BOARD_SIZE, Piece, Position, Team } from "protocol"
 import { useGameState } from "../state/game";
 import { GLYPHS } from "../constants/constants";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { playerId } from "../lib/socket";
-import { getProjectedBoard, getValidMovesForPiece } from "../lib/validMoves";
+import { getValidMovesForPiece } from "../lib/validMoves";
 import { getTeamByPlayerId } from "../helpers/helpers";
 
 const TEAM_COLORS: Record<Team, string> = {
@@ -27,6 +27,14 @@ export default function Board() {
     const tentativeMoves = useGameState(state => state.tentativeMoves);
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
 
+    const validMoves = useMemo(
+        () =>
+            room && selectedSquare
+                ? getValidMovesForPiece(room.board, tentativeMoves, selectedSquare)
+                : [],
+        [room, selectedSquare, tentativeMoves]
+    );
+
     return (
         <div className="grid grid-cols-7 w-fit rounded-2xl overflow-clip">
             {
@@ -38,12 +46,14 @@ export default function Board() {
 
                         const isSelected = selectedSquare?.row == i && selectedSquare.col == j;
                         const isSelectable = piece && team && piece.team == team;
+                        const isValidMove = validMoves.some(move => move.row === i && move.col === j);
 
                         const bgClass = ((i + j) % 2 === 0) ? "bg-square-dark" : "bg-square-light";
                         const cornerClass = CORNER_POSITIONS[i]?.[j] ? CORNER_POSITIONS[i][j] : '';
                         const selectedClass = isSelected ? 'border-2 border-gilt' : '';
                         const selectableClass = isSelectable ? 'cursor-pointer' : '';
-                        const squareClass = `${bgClass} ${cornerClass} ${selectedClass} ${selectableClass}`;
+                        const validMoveClass = isValidMove ? 'ring-2 ring-inset ring-gilt-dim' : '';
+                        const squareClass = `${bgClass} ${cornerClass} ${selectedClass} ${selectableClass} ${validMoveClass}`;
 
                         return (
                             <div
