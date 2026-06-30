@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { useChallengeRequests } from "../state/challengeRequests";
-import { Room } from "protocol";
+import { Move, Room, RoundResolvedPayload, RoundStartPayload } from "protocol";
 import { useGameState } from "../state/game";
 
 const PLAYER_ID_KEY = "kf.playerId";
@@ -34,6 +34,10 @@ export const acceptChallenge = (challengerId: string) => {
   socket.emit("acceptChallenge", challengerId);
 }
 
+export const submitMoves = (roomId: string, roundId: number, moves: Move[]) => {
+  socket.emit("submitMoves", { roomId, roundId, moves });
+}
+
 socket.on("challenge", (opponentId: string) => {
   console.log(`Player ${opponentId} challenged you!`);
   useChallengeRequests.getState().addChallenge(opponentId);
@@ -44,6 +48,14 @@ socket.on("matchStarted", (matchDetails: { roomId: string; room: Room }) => {
   useGameState.getState().setRoomFromServer(matchDetails.roomId, matchDetails.room);
   useGameState.getState().startGame();
 })
+
+socket.on("roundStart", (payload: RoundStartPayload) => {
+  useGameState.getState().startRound(payload);
+});
+
+socket.on("roundResolved", (payload: RoundResolvedPayload) => {
+  useGameState.getState().commitResolved(payload.board);
+});
 
 socket.on("disconnect", () => {
   console.log("Disconnected!");

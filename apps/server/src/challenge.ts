@@ -3,6 +3,7 @@ import { io, playerSocketIds, rooms } from ".";
 import { randomUUID } from "crypto";
 import { initialPosition } from "./initialPosition";
 import type { Room } from "protocol";
+import { startRound } from "./round.js";
 
 export function handleChallenge(socket: Socket) {
     const playerId = socket.data.playerId;
@@ -44,6 +45,8 @@ export function handleChallengeAccept(socket: Socket) {
             });
 
             console.log(`Match ${roomId} started: blue=${challengerId} red=${playerId}`);
+
+            startRound(roomId);
         }
     })
 }

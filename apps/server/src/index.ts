@@ -1,6 +1,7 @@
 import { Server, type Socket } from "socket.io";
 import type { Room } from "protocol";
 import { handleChallenge, handleChallengeAccept } from "./challenge.js";
+import { handleSubmitMoves } from "./round.js";
 
 export const io = new Server(8080, { cors: { origin: "*" } });
 export const rooms: Record<string, Room> = {};
@@ -20,9 +21,12 @@ io.on("connection", (socket: Socket) => {
 
     handleChallenge(socket);
     handleChallengeAccept(socket);
+    handleSubmitMoves(socket);
 
     socket.on("disconnect", () => {
         playerSocketIds.delete(playerId);
+        // TODO(room-lifecycle): tear down the round loop (stopRound) for any room
+        // this player was in once room ownership/reconnect handling exists.
         console.log("user disconnected");
     });
 });
