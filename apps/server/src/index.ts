@@ -1,8 +1,26 @@
 import { Server, type Socket } from "socket.io";
-import type { Room } from "protocol";
+import type {
+    Room,
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData,
+} from "protocol";
 import { handleChallenge, handleChallengeAccept } from "./challenge.js";
 
-export const io = new Server(8080, { cors: { origin: "*" } });
+export type TypedSocket = Socket<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+>;
+
+export const io = new Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+>(8080, { cors: { origin: "*" } });
 export const rooms: Record<string, Room> = {};
 export const playerSocketIds = new Map<string, string>();
 
@@ -13,7 +31,7 @@ io.use((socket, next) => {
     next();
 })
 
-io.on("connection", (socket: Socket) => {
+io.on("connection", (socket: TypedSocket) => {
     const playerId = socket.data.playerId;
     playerSocketIds.set(playerId, socket.id);
     console.log(`user connected with the id: ${socket.id} and player_id: ${playerId}`);

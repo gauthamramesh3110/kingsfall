@@ -1,6 +1,6 @@
-import { io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import { useChallengeRequests } from "../state/challengeRequests";
-import { Room } from "protocol";
+import type { ServerToClientEvents, ClientToServerEvents } from "protocol";
 import { useGameState } from "../state/game";
 
 const PLAYER_ID_KEY = "kf.playerId";
@@ -22,9 +22,12 @@ function getPlayerId(): string {
 
 export const playerId = getPlayerId();
 
-export const socket = io("http://localhost:8080", {
-  auth: { playerId },
-});
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+  "http://localhost:8080",
+  {
+    auth: { playerId },
+  }
+);
 
 export const challengePlayer = (opponentId: string) => {
   socket.emit("challenge", opponentId);
@@ -39,10 +42,25 @@ socket.on("challenge", (opponentId: string) => {
   useChallengeRequests.getState().addChallenge(opponentId);
 })
 
-socket.on("matchStarted", (matchDetails: { roomId: string; room: Room }) => {
+socket.on("matchStarted", (matchDetails) => {
   console.log("Match has Started!")
   useGameState.getState().setRoomFromServer(matchDetails.roomId, matchDetails.room);
   useGameState.getState().startGame();
+})
+
+socket.on("roundStarted", () => {
+  console.log("New Round");
+})
+
+socket.on("retrieveMoves", (callback) => {
+  console.log("Sending Moves");
+  const { roomId, tentativeMoves } = useGameState.getState();
+  if (!roomId) return;
+  callback({
+    playerId,
+    roomId,
+    tentativeMoves
+  })
 })
 
 socket.on("disconnect", () => {

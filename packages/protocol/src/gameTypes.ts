@@ -13,4 +13,10 @@ export interface Room {
     board: (Piece | null)[][];
 }
 
+export interface Moves {
+    roomId: string;
+    playerId: string;
+    tentativeMoves: (Piece | null)[][];
+}
+
 export const BOARD_SIZE = 7;

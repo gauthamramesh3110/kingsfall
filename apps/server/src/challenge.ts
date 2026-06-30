@@ -1,10 +1,10 @@
-import type { Socket } from "socket.io";
-import { io, playerSocketIds, rooms } from ".";
+import { io, playerSocketIds, rooms, type TypedSocket } from ".";
 import { randomUUID } from "crypto";
 import { initialPosition } from "./initialPosition";
 import type { Room } from "protocol";
+import { startRounds } from "./rounds";
 
-export function handleChallenge(socket: Socket) {
+export function handleChallenge(socket: TypedSocket) {
     const playerId = socket.data.playerId;
 
     socket.on("challenge", (opponentId: string) => {
@@ -19,7 +19,7 @@ export function handleChallenge(socket: Socket) {
     });
 }
 
-export function handleChallengeAccept(socket: Socket) {
+export function handleChallengeAccept(socket: TypedSocket) {
     const playerId = socket.data.playerId;
     socket.on("acceptChallenge", (challengerId: string) => {
         const challengerSocketId = playerSocketIds.get(challengerId);
@@ -42,6 +42,8 @@ export function handleChallengeAccept(socket: Socket) {
                 roomId,
                 room
             });
+
+            startRounds(roomId);
 
             console.log(`Match ${roomId} started: blue=${challengerId} red=${playerId}`);
         }
