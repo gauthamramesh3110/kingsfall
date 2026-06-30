@@ -6,12 +6,11 @@ export interface Piece {
     id: string;
     type: PieceType;
     team: Team;
-    position: Position;
 }
 
 export interface Room {
     seats: Record<Team, string | null>;
-    board: Piece[];
+    board: (Piece | null)[][];
 }
 
 export const BOARD_SIZE = 7;

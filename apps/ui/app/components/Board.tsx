@@ -1,9 +1,9 @@
-import { BOARD_SIZE, Position, Team } from "protocol"
-import { useGameState, useMovesState } from "../state/game";
+import { BOARD_SIZE, Piece, Position, Team } from "protocol"
+import { useGameState } from "../state/game";
 import { GLYPHS } from "../constants/constants";
 import { useState } from "react";
 import { playerId } from "../lib/socket";
-import { getValidMovesForPiece } from "../lib/validMoves";
+import { getProjectedBoard, getValidMovesForPiece } from "../lib/validMoves";
 import { getTeamByPlayerId } from "../helpers/helpers";
 
 const TEAM_COLORS: Record<Team, string> = {
@@ -24,7 +24,6 @@ const CORNER_POSITIONS: Record<number, Record<number, string>> = {
 
 export default function Board() {
     const room = useGameState(state => state.room);
-    const pieces = room?.board ?? [];
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
 
     return (
@@ -32,7 +31,7 @@ export default function Board() {
             {
                 Array.from({ length: BOARD_SIZE }, (_, i) => {
                     return Array.from({ length: BOARD_SIZE }, (_, j) => {
-                        const piece = pieces.find((candidate) => candidate.position.row === i && candidate.position.col === j);
+                        const piece = room?.board[i][j]
                         const team = room ? getTeamByPlayerId(room, playerId) : undefined;
 
                         const isSelected = selectedSquare?.row == i && selectedSquare.col == j;
@@ -43,17 +42,20 @@ export default function Board() {
                         const selectedClass = isSelected ? 'border-2 border-gilt' : '';
                         const selectableClass = isSelectable ? 'cursor-pointer' : '';
                         const squareClass = `${bgClass} ${cornerClass} ${selectedClass} ${selectableClass}`;
+
                         return (
                             <div
                                 key={`${i}-${j}`}
                                 className={`aspect-square w-16 relative flex justify-center items-center ${squareClass}`}
                                 onClick={
-                                    isSelectable ? () => {
-                                        setSelectedSquare({
-                                            row: i,
-                                            col: j
-                                        })
-                                    } : undefined
+                                    isSelectable
+                                        ? () => {
+                                            setSelectedSquare({
+                                                row: i,
+                                                col: j
+                                            })
+                                        }
+                                        : undefined
                                 }
                             >
                                 {

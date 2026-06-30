@@ -1,108 +1,145 @@
 import type { Piece, Position } from "protocol";
 
-const isInBounds = (row: number, col: number) => row >= 0 && row < 7 && col >= 0 && col < 7;
+function hasMoveAt(moves: Position[], position: Position): boolean {
+    return moves.some((move) => move.row === position.row && move.col === position.col);
+}
 
-export const getValidMovesForPiece = (
-    board: ((Piece | null)[][] | undefined),
-    selectedSquare: Position | null
-) => {
-    if (!board || !selectedSquare) return [];
+const ORTHOGONAL_DIRECTIONS: Position[] = [
+    { row: -1, col: 0 },
+    { row: 1, col: 0 },
+    { row: 0, col: -1 },
+    { row: 0, col: 1 },
+];
 
-    const selectedPiece = board[selectedSquare.row]?.[selectedSquare.col];
-    if (!selectedPiece) return [];
+const DIAGONAL_DIRECTIONS: Position[] = [
+    { row: -1, col: -1 },
+    { row: -1, col: 1 },
+    { row: 1, col: -1 },
+    { row: 1, col: 1 },
+];
+
+const KNIGHT_DELTAS: Position[] = [
+    { row: -2, col: -1 },
+    { row: -2, col: 1 },
+    { row: -1, col: -2 },
+    { row: -1, col: 2 },
+    { row: 1, col: -2 },
+    { row: 1, col: 2 },
+    { row: 2, col: -1 },
+    { row: 2, col: 1 },
+];
+
+function isInBounds(position: Position): boolean {
+    return position.row >= 0 && position.row < 7 && position.col >= 0 && position.col < 7;
+}
+
+function getPieceAt(pieces: Piece[], position: Position): Piece | undefined {
+    return pieces.find((piece) => piece.position.row === position.row && piece.position.col === position.col);
+}
+
+function addMoveIfValid(
+    moves: Position[],
+    pieces: Piece[],
+    selectedPiece: Piece,
+    position: Position,
+): boolean {
+    if (!isInBounds(position)) {
+        return false;
+    }
+
+    if (hasMoveAt(moves, position)) {
+        return false;
+    }
+
+    const occupant = getPieceAt(pieces, position);
+    if (!occupant) {
+        moves.push(position);
+        return true;
+    }
+
+    if (occupant.team !== selectedPiece.team) {
+        moves.push(position);
+    }
+
+    return false;
+}
+
+export function getProjectedBoard(pieces: Piece[], tentativeMoves: Record<string, Position>): Piece[] {
+    const bySquare = new Map<string, Piece>();
+
+    for (const piece of pieces) {
+        const target = tentativeMoves[piece.id];
+        const position = target ?? piece.position;
+        const key = `${position.row},${position.col}`;
+        const existing = bySquare.get(key);
+
+        if (!existing) {
+            bySquare.set(key, { ...piece, position });
+            continue;
+        }
+
+        // Collision: the piece that moved here captures the stationary one.
+        if (target !== undefined && tentativeMoves[existing.id] === undefined) {
+            bySquare.set(key, { ...piece, position });
+        }
+    }
+
+    return [...bySquare.values()];
+}
+
+export function getValidMovesForPiece(pieces: Piece[], selectedPosition: Position): Position[] {
+    const selectedPiece = getPieceAt(pieces, selectedPosition);
+    if (!selectedPiece) {
+        return [];
+    }
 
     const moves: Position[] = [];
-
-    const addDirectionalMoves = (rowDelta: number, colDelta: number) => {
-        let nextRow = selectedSquare.row + rowDelta;
-        let nextCol = selectedSquare.col + colDelta;
-
-        while (isInBounds(nextRow, nextCol)) {
-            const targetPiece = board[nextRow][nextCol];
-
-            if (targetPiece) {
-                if (targetPiece.team !== selectedPiece.team) {
-                    moves.push({ row: nextRow, col: nextCol });
-                }
-                break;
-            }
-
-            moves.push({ row: nextRow, col: nextCol });
-            nextRow += rowDelta;
-            nextCol += colDelta;
-        }
-    };
+    const { row, col } = selectedPosition;
 
     switch (selectedPiece.type) {
         case "K": {
-            const offsets = [-1, 0, 1];
-            offsets.forEach(rowDelta => {
-                offsets.forEach(colDelta => {
-                    if (rowDelta === 0 && colDelta === 0) return;
-
-                    const nextRow = selectedSquare.row + rowDelta;
-                    const nextCol = selectedSquare.col + colDelta;
-
-                    if (!isInBounds(nextRow, nextCol)) return;
-
-                    const targetPiece = board[nextRow][nextCol];
-                    if (!targetPiece || targetPiece.team !== selectedPiece.team) {
-                        moves.push({ row: nextRow, col: nextCol });
-                    }
-                });
-            });
+            for (const direction of [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
+                const nextPosition = { row: row + direction.row, col: col + direction.col };
+                addMoveIfValid(moves, pieces, selectedPiece, nextPosition);
+            }
+            break;
+        }
+        case "Q": {
+            for (const direction of [...ORTHOGONAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
+                let nextPosition = { row: row + direction.row, col: col + direction.col };
+                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
+                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
+                }
+            }
+            break;
+        }
+        case "R": {
+            for (const direction of ORTHOGONAL_DIRECTIONS) {
+                let nextPosition = { row: row + direction.row, col: col + direction.col };
+                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
+                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
+                }
+            }
+            break;
+        }
+        case "B": {
+            for (const direction of DIAGONAL_DIRECTIONS) {
+                let nextPosition = { row: row + direction.row, col: col + direction.col };
+                while (addMoveIfValid(moves, pieces, selectedPiece, nextPosition)) {
+                    nextPosition = { row: nextPosition.row + direction.row, col: nextPosition.col + direction.col };
+                }
+            }
             break;
         }
         case "N": {
-            const offsets = [
-                { row: -2, col: -1 },
-                { row: -2, col: 1 },
-                { row: -1, col: -2 },
-                { row: -1, col: 2 },
-                { row: 1, col: -2 },
-                { row: 1, col: 2 },
-                { row: 2, col: -1 },
-                { row: 2, col: 1 },
-            ];
-
-            offsets.forEach(({ row, col }) => {
-                const nextRow = selectedSquare.row + row;
-                const nextCol = selectedSquare.col + col;
-
-                if (!isInBounds(nextRow, nextCol)) return;
-
-                const targetPiece = board[nextRow][nextCol];
-                if (!targetPiece || targetPiece.team !== selectedPiece.team) {
-                    moves.push({ row: nextRow, col: nextCol });
-                }
-            });
+            for (const delta of KNIGHT_DELTAS) {
+                const nextPosition = { row: row + delta.row, col: col + delta.col };
+                addMoveIfValid(moves, pieces, selectedPiece, nextPosition);
+            }
             break;
         }
-        case "B":
-            addDirectionalMoves(-1, -1);
-            addDirectionalMoves(-1, 1);
-            addDirectionalMoves(1, -1);
-            addDirectionalMoves(1, 1);
-            break;
-        case "R":
-            addDirectionalMoves(-1, 0);
-            addDirectionalMoves(1, 0);
-            addDirectionalMoves(0, -1);
-            addDirectionalMoves(0, 1);
-            break;
-        case "Q":
-            addDirectionalMoves(-1, -1);
-            addDirectionalMoves(-1, 0);
-            addDirectionalMoves(-1, 1);
-            addDirectionalMoves(0, -1);
-            addDirectionalMoves(0, 1);
-            addDirectionalMoves(1, -1);
-            addDirectionalMoves(1, 0);
-            addDirectionalMoves(1, 1);
-            break;
-        default:
-            break;
     }
 
     return moves;
-};
+}
+
