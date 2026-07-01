@@ -19,12 +19,15 @@ export const startRounds = (roomId: string) => {
         resolveBoard(moves);
 
         console.log(`New Round for Room Id: ${roomId}`);
+        const roundEnd = new Date(new Date().getTime() + ROUND_INTERVAL);
+
         io.to(roomId).emit("roundStarted", {
             roomId: roomId,
-            room: rooms[roomId]!
+            room: rooms[roomId]!,
+            roundEnd
         });
     }
-    setInterval(startNewRound, ROUND_INTERVAL);
+    setInterval(startNewRound, ROUND_INTERVAL + 500);
 }
 
 export const handleSubmitMoves = (socket: TypedSocket) => {

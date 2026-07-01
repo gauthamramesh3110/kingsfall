@@ -11,7 +11,7 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
     challenge: (opponentId: string) => void;
     matchStarted: (matchDetails: { roomId: string; room: Room }) => void;
-    roundStarted: (matchDetails: { roomId: string; room: Room }) => void;
+    roundStarted: (matchDetails: { roomId: string; room: Room; roundEnd: Date }) => void;
     // last param is the ack callback; its arg is what each client returns
     retrieveMoves: (callback: (moves: Moves) => void) => void;
 }

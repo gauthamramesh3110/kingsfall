@@ -6,10 +6,12 @@ interface GameState {
     roomId: string | null;
     room: Room | null;
     tentativeMoves: (Piece | null)[][];
+    roundEnd: Date;
 
     startGame: () => void;
     setRoomFromServer: (roomId: string, room: Room) => void;
     setTentativeMove: (pieceId: string, tentativePosition: Position) => void;
+    setRoundEnd: (roundEnd: Date) => void;
 }
 
 export const useGameState = create<GameState>((set) => ({
@@ -17,6 +19,7 @@ export const useGameState = create<GameState>((set) => ({
     roomId: null,
     room: null,
     tentativeMoves: Array.from({ length: BOARD_SIZE }, () => Array.from({ length: BOARD_SIZE }, () => null)),
+    roundEnd: new Date(),
 
     startGame: () => {
         set({
@@ -54,4 +57,12 @@ export const useGameState = create<GameState>((set) => ({
             return { tentativeMoves: next };
         });
     },
+
+    setRoundEnd: (roundEnd) => {
+        set((state) => {
+            return {
+                roundEnd
+            }
+        });
+    }
 }));

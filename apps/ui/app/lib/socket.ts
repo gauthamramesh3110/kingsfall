@@ -50,6 +50,7 @@ socket.on("matchStarted", (matchDetails) => {
 
 socket.on("roundStarted", (matchDetails) => {
   useGameState.getState().setRoomFromServer(matchDetails.roomId, matchDetails.room);
+  useGameState.getState().setRoundEnd(new Date(matchDetails.roundEnd));
 })
 
 socket.on("retrieveMoves", (callback) => {
