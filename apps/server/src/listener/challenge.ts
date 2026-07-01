@@ -1,6 +1,6 @@
-import { io, playerSocketIds, rooms, type TypedSocket } from ".";
+import { io, playerSocketIds, rooms, type TypedSocket } from "..";
 import { randomUUID } from "crypto";
-import { initialPosition } from "./initialPosition";
+import { initialPosition } from "../helpers/initialPosition";
 import type { Room } from "protocol";
 import { startRounds } from "./rounds";
 

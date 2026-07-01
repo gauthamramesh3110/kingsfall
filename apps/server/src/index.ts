@@ -6,7 +6,7 @@ import type {
     InterServerEvents,
     SocketData,
 } from "protocol";
-import { handleChallenge, handleChallengeAccept } from "./challenge.js";
+import { handleChallenge, handleChallengeAccept } from "./listener/challenge.js";
 
 export type TypedSocket = Socket<
     ClientToServerEvents,

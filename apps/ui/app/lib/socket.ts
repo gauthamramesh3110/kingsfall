@@ -48,8 +48,8 @@ socket.on("matchStarted", (matchDetails) => {
   useGameState.getState().startGame();
 })
 
-socket.on("roundStarted", () => {
-  console.log("New Round");
+socket.on("roundStarted", (matchDetails) => {
+  useGameState.getState().setRoomFromServer(matchDetails.roomId, matchDetails.room);
 })
 
 socket.on("retrieveMoves", (callback) => {

@@ -11,12 +11,12 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
     challenge: (opponentId: string) => void;
     matchStarted: (matchDetails: { roomId: string; room: Room }) => void;
-    roundStarted: () => void;
+    roundStarted: (matchDetails: { roomId: string; room: Room }) => void;
     // last param is the ack callback; its arg is what each client returns
     retrieveMoves: (callback: (moves: Moves) => void) => void;
 }
 
-export interface InterServerEvents {}
+export interface InterServerEvents { }
 
 export interface SocketData {
     playerId: string;
